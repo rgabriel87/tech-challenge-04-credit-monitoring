@@ -1,8 +1,8 @@
-# Tech Challenge 04 — Credit Scoring Monitoring
+# Tech Challenge 04 - Credit Scoring Monitoring
 
 ## Observabilidade Contínua, Data Drift, Qualidade de Dados e Governança
 
-Projeto desenvolvido para o Tech Challenge da Fase 4 da Pós-Graduação em Machine Learning Engineering — FIAP.
+Projeto desenvolvido para o Tech Challenge da Fase 4 da Pós-Graduação em Machine Learning Engineering pela FIAP.
 
 O objetivo é implementar uma camada de sustentação e confiabilidade para um modelo de Credit Scoring em produção, contemplando:
 
@@ -17,18 +17,16 @@ O objetivo é implementar uma camada de sustentação e confiabilidade para um m
 - testes automatizados;
 - governança e privacidade;
 - princípios da LGPD;
-- análise de causalidade e riscos de viés.
+- análise de causalidade e riscos de viés;
 
 ---
 
 # 1. Contexto do problema
 
 Modelos de Credit Scoring são utilizados para estimar o risco de inadimplência de clientes.
-
 Porém, mesmo que um modelo apresente bom desempenho no momento do treinamento, o ambiente econômico pode mudar.
 
 Exemplos:
-
 - redução da renda;
 - aumento do endividamento;
 - inflação;
@@ -37,11 +35,8 @@ Exemplos:
 - aumento de atrasos em pagamentos.
 
 Essas alterações podem fazer com que os dados recebidos em produção deixem de representar a mesma distribuição utilizada no treinamento.
-
 Esse fenômeno é conhecido como **Data Drift**.
-
 O principal risco é a degradação silenciosa: tecnicamente o sistema continua executando, mas o comportamento dos dados e das previsões muda.
-
 Este projeto cria uma camada de monitoramento para identificar esse cenário.
 
 ---
@@ -161,11 +156,9 @@ Variáveis:
 | loan_amount | Valor solicitado |
 | default | Indicador de inadimplência |
 
-O dataset sintético foi escolhido para permitir controle sobre a geração dos dados e, principalmente, sobre os cenários de drift.
-
+O dataset sintético foi escolhido pra permitir controle sobre a geração dos dados e principalmente, sobre os cenários de drift.
 A geração utiliza seed fixa, garantindo reprodutibilidade.
-
-A taxa de inadimplência do Reference Dataset foi:
+A taxa de inadimplência do Reference Dataset foi de:
 
 ```text
 28,84%
@@ -209,14 +202,13 @@ Quantidade:
 5.000 registros
 ```
 
-Essa separação é fundamental porque o monitoramento de drift compara a distribuição conhecida no desenvolvimento com a distribuição observada posteriormente em produção.
+Essa separação é fundamental porque o monitoramento de drift compara a distribuição conhecida no desenvolvimento com a distribuição observada posteriormente já em produção.
 
 ---
 
 # 6. Data Contract com Pandera
 
 Antes que um lote possa seguir pelo pipeline, ele passa por um contrato de dados implementado com **Pandera**.
-
 Entre as regras implementadas estão:
 
 - `customer_id` obrigatório, positivo e único;
@@ -252,7 +244,6 @@ A ingestão NÃO deve continuar.
 ```
 
 O pipeline identifica individualmente as violações encontradas.
-
 Isso evita que dados estruturalmente inválidos contaminem o processo de inferência ou monitoramento.
 
 ---
@@ -280,7 +271,7 @@ Os testes verificam:
 - bloqueio de idade inferior a 18;
 - bloqueio de renda nula;
 - bloqueio de credit score inválido;
-- bloqueio de identificadores duplicados.
+- bloqueio de identificadores duplicados;
 
 ---
 
@@ -324,7 +315,6 @@ Métricas obtidas:
 | ROC-AUC | 0.7121 |
 
 O objetivo deste projeto não é otimizar exaustivamente o classificador, mas estabelecer um baseline rastreável que permita demonstrar monitoramento, drift e governança.
-
 Em um ambiente real de concessão de crédito, métricas como recall, precisão, calibração, custos de falsos positivos/falsos negativos e métricas de fairness deveriam ser avaliadas conforme a política de risco da instituição.
 
 ---
@@ -371,7 +361,6 @@ http://127.0.0.1:5000
 # 12. Simulação de Data Drift
 
 Para representar uma deterioração do cenário econômico, foram realizadas mudanças controladas no Production Dataset.
-
 Três variáveis foram alteradas.
 
 ## Income
@@ -438,7 +427,6 @@ Probabilidade média estimada de inadimplência:
 ```
 
 Esse comportamento reforça a necessidade de monitoramento contínuo.
-
 Uma alteração nas previsões, isoladamente, não comprova degradação do modelo. Ela funciona como um sinal operacional que deve ser analisado juntamente com drift, desempenho quando os rótulos reais estiverem disponíveis e contexto de negócio.
 
 ---
@@ -487,7 +475,6 @@ late_payments
 ```
 
 O teste detectou exatamente as três variáveis modificadas intencionalmente na simulação.
-
 As estatísticas completas são armazenadas em:
 
 ```text
@@ -498,7 +485,7 @@ reports/drift_statistics.csv
 
 # 15. Evidently
 
-Além do teste estatístico implementado diretamente no projeto, o **Evidently** foi utilizado para gerar um relatório visual de Data Drift.
+Além do teste estatístico implementado diretamente no projeto, o **Evidently** foi utilizado pra gerar um relatório visual de Data Drift.
 
 Arquivo:
 
@@ -556,7 +543,7 @@ PIPELINE STATUS=SUCCESS
 
 # 17. Métricas de saúde operacional
 
-As principais métricas definidas para sustentação são:
+As principais métricas definidas pra sustentação são:
 
 | Métrica | Finalidade |
 |---|---|
@@ -591,7 +578,6 @@ Em produção, o alerta poderia ser encaminhado para:
 - equipe de risco/modelagem.
 
 A ocorrência de drift não deve provocar automaticamente o retreinamento ou substituição do modelo.
-
 O alerta inicia uma investigação.
 
 ---
@@ -601,7 +587,6 @@ O alerta inicia uma investigação.
 ## Data Drift
 
 Ocorre quando a distribuição das variáveis de entrada muda.
-
 Neste projeto isso foi simulado diretamente em:
 
 ```text
@@ -617,9 +602,7 @@ Concept Drift ocorre quando a relação entre as variáveis de entrada e o resul
 Exemplo:
 
 Mesmo para clientes com características semelhantes às observadas no treinamento, uma nova condição econômica pode modificar a probabilidade real de inadimplência.
-
 A detecção robusta de Concept Drift exige observar os resultados reais posteriores, ou seja, os rótulos de inadimplência após o período necessário para maturação do crédito.
-
 Por isso, neste protótipo o experimento implementa diretamente Data Drift e monitora mudanças nas previsões como sinal de risco. Em produção, o Concept Drift seria avaliado posteriormente por meio da comparação entre previsões e resultados reais.
 
 ---
@@ -637,7 +620,7 @@ Ao detectar drift:
 7. recalcular métricas de performance;
 8. analisar fairness e possíveis impactos discriminatórios;
 9. avaliar necessidade de recalibração ou retreinamento;
-10. validar o novo modelo antes de qualquer promoção para produção.
+10. validar o novo modelo antes de qualquer promoção para produção;
 
 O retreinamento automático não é adotado como primeira resposta porque drift não significa necessariamente que o modelo perdeu capacidade preditiva.
 
@@ -646,9 +629,7 @@ O retreinamento automático não é adotado como primeira resposta porque drift 
 # 21. Análise causal
 
 É importante distinguir correlação de causalidade.
-
 Neste experimento, a redução da renda e o aumento do endividamento e dos atrasos foram introduzidos deliberadamente pelo código. Portanto, conhecemos a origem técnica do Data Drift observado.
-
 Entretanto, em um sistema real, detectar estatisticamente uma mudança em `income`, por exemplo, não demonstra que determinada condição econômica causou diretamente uma alteração na inadimplência.
 
 O monitoramento responde:
@@ -727,7 +708,7 @@ Cada versão de modelo deve possuir:
 
 Este projeto utiliza exclusivamente **dados sintéticos**, portanto não contém dados pessoais reais.
 
-Entretanto, um sistema real de Credit Scoring trataria dados pessoais e deveria ser desenvolvido considerando a Lei Geral de Proteção de Dados Pessoais — LGPD (Lei nº 13.709/2018).
+Entretanto, um sistema real de Credit Scoring trataria dados pessoais e deveria ser desenvolvido considerando a Lei Geral de Proteção de Dados Pessoais | LGPD (Lei nº 13.709/2018).
 
 A proteção da privacidade deve ser incorporada desde o desenho da solução, seguindo princípios de **Privacy by Design** e **Privacy by Default**.
 
@@ -746,7 +727,7 @@ Exemplos de PII:
 - endereço;
 - telefone;
 - e-mail;
-- número de conta.
+- número de conta;
 
 Medidas recomendadas:
 
@@ -782,9 +763,7 @@ Além de reduzir riscos de privacidade, a minimização diminui superfície de a
 # 26. Base legal e proteção do crédito
 
 Em um cenário real, a organização deve mapear formalmente a hipótese legal aplicável a cada atividade de tratamento.
-
 A LGPD prevê, entre as hipóteses do art. 7º, o tratamento de dados pessoais para **proteção do crédito**.
-
 Isso não elimina as demais obrigações de proteção de dados.
 
 Continuam relevantes:
@@ -805,7 +784,6 @@ A definição final da base legal e do desenho do tratamento deve ser validada p
 # 27. Decisões automatizadas e transparência
 
 Credit Scoring pode afetar diretamente os interesses de uma pessoa.
-
 Quando houver decisão tomada unicamente com base em tratamento automatizado de dados pessoais que afete seus interesses, a governança deve contemplar os direitos previstos pela LGPD, inclusive mecanismos relacionados à revisão da decisão e ao fornecimento de informações adequadas sobre critérios e procedimentos utilizados, observados os limites legais aplicáveis.
 
 O processo deve possuir:
@@ -897,7 +875,7 @@ Exemplos:
 
 ---
 
-# 32. Arquitetura de produção — Batch x Real-time
+# 32. Arquitetura de produção - Batch x Real-time
 
 Este protótipo executa o monitoramento em **batch**.
 
@@ -948,7 +926,6 @@ Monitoramento
 ```
 
 A detecção estatística de drift normalmente continua utilizando janelas de observações acumuladas, evitando decisões baseadas em uma única requisição.
-
 Uma arquitetura real pode combinar:
 
 ```text
@@ -1147,13 +1124,9 @@ O projeto demonstra que colocar um modelo em produção não encerra o ciclo de 
 - governança.
 
 O Data Contract impede a entrada de dados inválidos.
-
 O MLflow mantém a rastreabilidade do baseline.
-
 O teste KS e o Evidently identificam alterações na distribuição dos dados.
-
 O pipeline registra métricas operacionais e gera alertas.
-
 A camada de governança define princípios para tratamento responsável de dados e decisões de crédito.
 
 Assim, a solução deixa de tratar o modelo como um artefato isolado e passa a considerar todo o ciclo de sustentação de um sistema de Machine Learning em produção.
