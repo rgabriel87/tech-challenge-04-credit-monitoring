@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# MLflow temporary artifacts
+mlruns/
+
+# Logs temporários adicionais
+*.tmp
+
+# Environment variables / secrets
+.env
+.env.*
